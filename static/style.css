@@ -7,18 +7,18 @@ body {
     align-items: center;
     min-height: 100vh;
     flex-direction: column;
-    background-color: #f0f0f0;
+    background-image: linear-gradient(to bottom, #add8e6, #9370db);
 }
 
 h1 {
     font-size: 2.5em;
     margin-bottom: 0.5em;
-    color: #333;
+    color: #333333;
 }
 
 p {
     font-size: 1.1em;
-    color: #333;
+    color: #333333;
     text-align: center;
     max-width: 500px;
 }
@@ -26,7 +26,7 @@ p {
 #puzzle {
     font-size: 1.5em;
     font-weight: bold;
-    color: #4a4a4a;
+    color: #333333;
     margin-bottom: 1em;
 }
 
@@ -35,19 +35,21 @@ input {
     padding: 0.5em;
     width: 300px;
     margin-right: 0.5em;
+    color: #333;
 }
 
 button {
     font-size: 1.2em;
     padding: 0.5em;
-    background-color: #007bff;
-    color: #fff;
-    border: none;
+    background-color: #ffffff;
+    color: #9370db;
+    border: 1px solid #9370db;
     cursor: pointer;
 }
 
 button:hover {
-    background-color: #0056b3;
+    background-color: #9370db;
+    color: #ffffff;
 }
 
 button:disabled {
@@ -64,5 +66,5 @@ button:disabled {
 #score {
     font-size: 1.2em;
     font-weight: bold;
-    color: #4a4a4a;
+    color: #333333;
 }

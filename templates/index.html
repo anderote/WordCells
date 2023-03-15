@@ -1,19 +1,23 @@
 <!doctype html>
 <html lang="en">
+
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
     <title>WordCell Game</title>
 </head>
+
 <body>
     <div class="main-content">
         <h1>WordCell Game</h1>
-        <p>Solve the word-based arithmetic puzzle by entering a word that is close in meaning to the result of the given operation.</p>
+        <p>Solve the word-based arithmetic puzzle by entering a word that is close in meaning to the result of the given
+            operation.</p>
         <div id="puzzle"></div>
         <input type="text" id="user-word" placeholder="Enter your answer here">
         <button id="submit-btn" onclick="submitAnswer()">Submit</button>
         <button id="new-puzzle-btn" onclick="generatePuzzle()">New Puzzle</button>
+        <div id="timer">Time left: 30s</div>
         <div id="result"></div>
         <div id="score">Your WordCell Score: 0.00</div>
     </div>
@@ -26,8 +30,26 @@
         let currentScore = 0;
         let currentResultEmbedding = [];
         let currentPuzzle = '';
+        let timer;
+        let timeLeft = 30;
+
+        function startTimer() {
+            timeLeft = 30;
+            $('#timer').text(`Time left: ${timeLeft}s`);
+            timer = setInterval(() => {
+                timeLeft--;
+                $('#timer').text(`Time left: ${timeLeft}s`);
+                if (timeLeft === 0) {
+                    clearInterval(timer);
+                    $('#result').text("Game Over");
+                    $('#submit-btn').prop('disabled', true);
+                }
+            }, 1000);
+        }
 
         function generatePuzzle() {
+            clearInterval(timer);
+            startTimer();
             $.getJSON('/generate_puzzle', data => {
                 $('#puzzle').text(data.puzzle);
                 currentResultEmbedding = data.result_embedding;
@@ -36,6 +58,7 @@
         }
 
         function submitAnswer() {
+            clearInterval(timer);
             const userWord = $('#user-word').val();
             $.post('/calculate_similarity', {
                 user_word: userWord,
@@ -54,7 +77,6 @@
                 generatePuzzle();
             });
         }
-
 
         function addToHistory(puzzle, answer, similarity) {
             const historyItem = `<li>${puzzle} | Answer: ${answer} | Similarity: ${similarity}</li>`;
@@ -82,4 +104,5 @@
         }
     </style>
 </body>
+
 </html>
