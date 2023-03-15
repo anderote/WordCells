@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <title>WordCell Game</title>
+</head>
+<body>
+    <div class="main-content">
+        <h1>WordCell Game</h1>
+        <p>Solve the word-based arithmetic puzzle by entering a word that is close in meaning to the result of the given operation.</p>
+        <div id="puzzle"></div>
+        <input type="text" id="user-word" placeholder="Enter your answer here">
+        <button id="submit-btn" onclick="submitAnswer()">Submit</button>
+        <button id="new-puzzle-btn" onclick="generatePuzzle()">New Puzzle</button>
+        <div id="result"></div>
+        <div id="score">Your WordCell Score: 0.00</div>
+    </div>
+    <div class="history">
+        <h2>History</h2>
+        <ul id="history-list"></ul>
+    </div>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        let currentScore = 0;
+        let currentResultEmbedding = [];
+        let currentPuzzle = '';
+
+        function generatePuzzle() {
+            $.getJSON('/generate_puzzle', data => {
+                $('#puzzle').text(data.puzzle);
+                currentResultEmbedding = data.result_embedding;
+                currentPuzzle = data.puzzle;
+            });
+        }
+
+        function submitAnswer() {
+            const userWord = $('#user-word').val();
+            $.post('/calculate_similarity', {
+                user_word: userWord,
+                result_embedding: currentResultEmbedding,
+            }, data => {
+                if (data.error) {
+                    $('#result').text(data.error);
+                } else {
+                    currentScore += data.similarity;
+                    $('#result').text(`Similarity: ${data.similarity}`);
+                    $('#score').text(`Your WordCell Score: ${currentScore.toFixed(2)}`);
+                    addToHistory(currentPuzzle, userWord, data.similarity);
+                }
+                // Clear the text entry box and generate a new puzzle
+                $('#user-word').val('');
+                generatePuzzle();
+            });
+        }
+
+
+        function addToHistory(puzzle, answer, similarity) {
+            const historyItem = `<li>${puzzle} | Answer: ${answer} | Similarity: ${similarity}</li>`;
+            $('#history-list').append(historyItem);
+        }
+
+        // Generate the first puzzle when the page loads
+        $(document).ready(() => {
+            generatePuzzle();
+        });
+    </script>
+    <style>
+        body {
+            display: flex;
+            justify-content: space-around;
+        }
+
+        .main-content {
+            flex: 1;
+        }
+
+        .history {
+            flex: 1;
+            padding-left: 50px;
+        }
+    </style>
+</body>
+</html>
