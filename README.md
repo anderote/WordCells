@@ -1,11 +1,7 @@
 In WordCells' web, a realm of play divine,
-
 Embark upon a quest, unravel math's attire,
-
 Through words' concealed embrace, their vectors twine,
-
 Ensnared in numbers' dance, as minds aspire.
-
 Each syllable, a code, transforms in space,
 
 In semantic realm, dimensions intertwine,
