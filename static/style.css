@@ -68,3 +68,18 @@ button:disabled {
     font-weight: bold;
     color: #333333;
 }
+
+input[type="text"].correct {
+    background-color: #7FFF7F;
+    animation: fadeout 2s forwards;
+}
+
+input[type="text"].wrong {
+    background-color: #FF7F7F;
+    animation: fadeout 2s forwards;
+}
+
+@keyframes fadeout {
+    from { background-color: #7FFF7F; }
+    to { background-color: #FFFFFF; }
+}

@@ -71,27 +71,6 @@ common_adjectives = load_common_adjectives(common_adjectives_path)
 def index():
     return render_template("index.html")
 
-def generate_grammatical_puzzle():
-    pattern = random.choice(["noun_adjective", "adjective_adjective", "noun_noun"])
-    
-    if pattern == "noun_adjective":
-        noun = random.choice([word for word in common_nouns if word in glove_model])
-        adjective = random.choice([word for word in common_adjectives if word in glove_model])
-        result_embedding = glove_model[noun] + glove_model[adjective]
-        puzzle = f"{noun} + {adjective}"
-    if pattern == "noun_noun":
-        noun_1 = random.choice([word for word in common_nouns if word in glove_model])
-        noun_2 = random.choice([word for word in common_nouns if word in glove_model])
-        result_embedding = glove_model[noun_1] + glove_model[noun_2]
-        puzzle = f"{noun_1} + {noun_2}"
-    else:  # pattern == "adjective_adjective"
-        adjective_1 = random.choice([word for word in common_adjectives if word in glove_model])
-        adjective_2 = random.choice([word for word in common_adjectives if word in glove_model])
-        result_embedding = glove_model[adjective_1] + glove_model[adjective_2]
-        puzzle = f"{adjective_1} + {adjective_2}"
-        
-    return puzzle, result_embedding
-
 # Add the following import
 from itertools import combinations
 
@@ -102,7 +81,9 @@ def generate_puzzle():
     if difficulty < 2 or difficulty > 4:
         difficulty = 2  # Reset to default if an invalid difficulty is given
 
-    words = random.sample([word for word in common_nouns if word in glove_model], difficulty)
+    # modified to be a noun plus adjectives
+    words = random.sample([word for word in common_adjectives if word in glove_model], difficulty -1)
+    words = words + random.sample(common_nouns, 1)
 
     result_embedding = np.sum([glove_model[word] for word in words], axis=0)
 

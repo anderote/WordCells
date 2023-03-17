@@ -44,7 +44,7 @@
         let timeLeft = 30;
 
         function startTimer() {
-            timeLeft = 30;
+            timeLeft = 10;
             $('#timer').text(`Time left: ${timeLeft}s`);
             timer = setInterval(() => {
                 timeLeft--;
@@ -100,10 +100,26 @@
         if (data.error) {
             $('#result').text(data.error);
         } else {
-            currentScore += data.score; // Update the current score based on the new scoring system
-            $('#result').text(`Similarity: ${data.similarity}`);
+            const similarity = data.similarity;
+            let scoreChange = 0;
+            if (similarity >= 0.5) {
+                scoreChange = difficulty - 1;
+            } else if (similarity <= -0.2) {
+                scoreChange = -difficulty/2;
+            }
+            currentScore += scoreChange;
+            $('#result').text(`Similarity: ${similarity}`);
             $('#score').text(`Your WordCell Score: ${currentScore.toFixed(2)}`);
-            addToHistory(currentPuzzle, userInput, data.similarity, data.score); // Update the history with the new score
+            addToHistory(currentPuzzle, userInput, similarity, scoreChange);
+
+            if (similarity > 0.5) {
+                $('#user-word').removeClass('wrong').addClass('correct');
+            } else {
+                $('#user-word').removeClass('correct').addClass('wrong');
+            }
+            setTimeout(() => {
+                $('#user-word').removeClass('correct wrong');
+            }, 2000);
             // generatePoem(puzzle_words, user_words);
         }
         // Clear the text entry box and generate a new puzzle
@@ -111,6 +127,8 @@
         generatePuzzle();
     });
 }
+
+
 
     function addToHistory(puzzle, userWord, similarity, score) {
         const listItem = $('<li>').text(`Puzzle: ${puzzle}, Your Word: ${userWord}, Similarity: ${similarity}, Score: ${score}`);
