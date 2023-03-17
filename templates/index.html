@@ -67,27 +67,6 @@
         }
 
 
-        function generatePuzzle() {
-            clearInterval(timer);
-            startTimer();
-            $.getJSON('/generate_puzzle', data => {
-                $('#puzzle').text(data.puzzle);
-                currentResultEmbedding = data.result_embedding;
-                currentPuzzle = data.puzzle;
-
-                // Extract the puzzle type and display it with instructions
-                const puzzleType = data.puzzle.includes('+') ? data.puzzle.split(' + ')[1] : '';
-                let puzzleInstructions = '';
-                if (puzzleType.endsWith('ing')) {  // verb
-                    puzzleInstructions = 'Enter a word that represents an action related to the given noun.';
-                } else {  // adjective
-                    puzzleInstructions = 'Enter a word that describes the the two words.';
-                }
-                $('#puzzle-type').text(`Puzzle Type: ${puzzleType} (${puzzleInstructions})`);
-            });
-        }
-
-
         function submitAnswer() {
             clearInterval(timer);
             const userWord = $('#user-word').val();
