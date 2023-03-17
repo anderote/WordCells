@@ -68,7 +68,7 @@
             });
         }
 
-        
+
         function submitAnswer() {
             clearInterval(timer);
             const userWord = $('#user-word').val();
@@ -84,9 +84,11 @@
                     $('#score').text(`Your WordCell Score: ${currentScore.toFixed(2)}`);
                     addToHistory(currentPuzzle, userWord, data.similarity);
                     $('#user-word').val('');
+                    generatePuzzle();  // generate a new puzzle
                 }
             });
         }
+
 
         function addToHistory(puzzle, userWord, similarity) {
             const listItem = $('<li>').text(`Puzzle: ${puzzle}, Your Word: ${userWord}, Similarity: ${similarity}`);
