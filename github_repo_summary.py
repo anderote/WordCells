@@ -30,8 +30,7 @@ def generate_summary_markdown(directory, repo_path=""):
         else:
             file_ext = Path(entry.path).suffix
             relative_path = os.path.join(repo_path, entry.name)
-            markdown_lines.append(preamble)
-            markdown_lines.append("\n")
+
             if (
                 file_ext in code_filetypes
                 and file_ext not in excluded_filetypes

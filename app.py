@@ -109,9 +109,7 @@ def generate_puzzle():
     return jsonify({"puzzle": " + ".join(words), "result_embedding": result_embedding.tolist()})
 
 
-# Update calculate_similarity() function
-# Import json at the beginning of the file
-# Update calculate_similarity() function
+
 @app.route("/calculate_similarity", methods=["POST"])
 def calculate_similarity():
     user_words = request.form["user_words"]
@@ -139,7 +137,16 @@ def calculate_similarity():
         similarity = cosine_similarity([user_combined_embedding], [result_embedding])[0][0]
         similarity = float(np.round(similarity, 2))
 
-    return jsonify({"similarity": round(similarity, 2)})
+    difficulty = len(puzzle_words) - 1
+    if similarity > 0.5:
+        score = difficulty
+    elif similarity < -0.2:
+        score = -difficulty / 2
+    else:
+        score = 0
+
+    return jsonify({"similarity": round(similarity, 2), "score": score})
+
 
 
 # Add a function to generate a poem using ChatGPT
@@ -176,4 +183,4 @@ def generate_poem_on_submit():
 
 if __name__ == "__main__":
     exec(open("github_repo_summary.py").read())
-    app.run(debug=True, port=5000)
+    app.run(debug=True, port=5005)
