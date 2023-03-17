@@ -4,6 +4,7 @@ import numpy as np
 from sklearn.metrics.pairwise import cosine_similarity
 import os
 
+
 app = Flask(__name__)
 
 def load_glove_embeddings(file_path):
