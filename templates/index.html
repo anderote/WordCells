@@ -14,6 +14,7 @@
         <p>Solve the word-based arithmetic puzzle by entering a word that is close in meaning to the result of the given
             operation.</p>
         <div id="puzzle"></div>
+        <div id="puzzle-type"></div>
         <input type="text" id="user-word" placeholder="Enter your answer here">
         <button id="submit-btn" onclick="submitAnswer()">Submit</button>
         <button id="new-puzzle-btn" onclick="generatePuzzle()">New Puzzle</button>
@@ -54,9 +55,20 @@
                 $('#puzzle').text(data.puzzle);
                 currentResultEmbedding = data.result_embedding;
                 currentPuzzle = data.puzzle;
+
+                // Extract the puzzle type and display it with instructions
+                const puzzleType = data.puzzle.includes('+') ? data.puzzle.split(' + ')[1] : '';
+                let puzzleInstructions = '';
+                if (puzzleType.endsWith('ing')) {  // verb
+                    puzzleInstructions = 'Enter a word that represents an action related to the given noun.';
+                } else {  // adjective
+                    puzzleInstructions = 'Enter a word that describes the the two words.';
+                }
+                $('#puzzle-type').text(`Puzzle Type: ${puzzleType} (${puzzleInstructions})`);
             });
         }
 
+        
         function submitAnswer() {
             clearInterval(timer);
             const userWord = $('#user-word').val();
@@ -71,38 +83,21 @@
                     $('#result').text(`Similarity: ${data.similarity}`);
                     $('#score').text(`Your WordCell Score: ${currentScore.toFixed(2)}`);
                     addToHistory(currentPuzzle, userWord, data.similarity);
+                    $('#user-word').val('');
                 }
-                // Clear the text entry box and generate a new puzzle
-                $('#user-word').val('');
-                generatePuzzle();
             });
         }
 
-        function addToHistory(puzzle, answer, similarity) {
-            const historyItem = `<li>${puzzle} | Answer: ${answer} | Similarity: ${similarity}</li>`;
-            $('#history-list').append(historyItem);
+        function addToHistory(puzzle, userWord, similarity) {
+            const listItem = $('<li>').text(`Puzzle: ${puzzle}, Your Word: ${userWord}, Similarity: ${similarity}`);
+            $('#history-list').append(listItem);
         }
 
-        // Generate the first puzzle when the page loads
-        $(document).ready(() => {
+        // Initialize the game
+        $(document).ready(function () {
             generatePuzzle();
         });
     </script>
-    <style>
-        body {
-            display: flex;
-            justify-content: space-around;
-        }
-
-        .main-content {
-            flex: 1;
-        }
-
-        .history {
-            flex: 1;
-            padding-left: 50px;
-        }
-    </style>
 </body>
 
 </html>
