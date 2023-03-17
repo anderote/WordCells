@@ -22,4 +22,4 @@ Note: you will need to [download one file](https://drive.google.com/file/d/1yAZw
 2. `source venv/bin/activate`
 3. `pip install -r requirements.txt`
 4. `python app.py`
-5. `navigate to http://127.0.0.1:5000`
+5. `navigate to http://127.0.0.1:5005`

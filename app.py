@@ -98,16 +98,15 @@ from itertools import combinations
 # Update generate_puzzle() function
 @app.route("/generate_puzzle")
 def generate_puzzle():
-    difficulty = int(request.args.get('difficulty', 2))  # Default difficulty is 2
+    difficulty = int(request.args.get('difficulty', 2))
     if difficulty < 2 or difficulty > 4:
-        difficulty = 2  # Reset to default if an invalid difficulty is given
+        difficulty = 2
 
     words = random.sample([word for word in common_nouns if word in glove_model], difficulty)
 
     result_embedding = np.sum([glove_model[word] for word in words], axis=0)
 
     return jsonify({"puzzle": " + ".join(words), "result_embedding": result_embedding.tolist()})
-
 
 
 @app.route("/calculate_similarity", methods=["POST"])
@@ -152,7 +151,7 @@ def calculate_similarity():
 # Add a function to generate a poem using ChatGPT
 def generate_poem(prompt):
     response = openai.Completion.create(
-        engine="text-davinci-002",
+        engine="text-davinci-003",
         prompt=prompt,
         max_tokens=50,
         n=1,
@@ -182,5 +181,5 @@ def generate_poem_on_submit():
 
 
 if __name__ == "__main__":
-    exec(open("github_repo_summary.py").read())
+    # exec(open("github_repo_summary.py").read())
     app.run(debug=True, port=5005)

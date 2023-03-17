@@ -68,3 +68,16 @@ button:disabled {
     font-weight: bold;
     color: #333333;
 }
+
+.start-screen {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    text-align: center;
+}
+
+.start-screen h1 {
+    margin-bottom: 20px;
+}
