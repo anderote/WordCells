@@ -13,6 +13,11 @@
         <h1>WordCell Game</h1>
         <p>Solve the word-based arithmetic puzzle by entering a word that is close in meaning to the result of the given
             operation.</p>
+            <select id="difficulty">
+                <option value="2" selected>Easy (2 words)</option>
+                <option value="3">Medium (3 words)</option>
+                <option value="4">Hard (4 words)</option>
+            </select>
         <div id="puzzle"></div>
         <div id="puzzle-type"></div>
         <input type="text" id="user-word" placeholder="Enter your answer here">
@@ -47,6 +52,20 @@
                 }
             }, 1000);
         }
+
+
+
+        function generatePuzzle() {
+            clearInterval(timer);
+            startTimer();
+            const difficulty = $('#difficulty').val();
+            $.getJSON('/generate_puzzle', {difficulty: difficulty}, data => {
+                $('#puzzle').text(data.puzzle);
+                currentResultEmbedding = data.result_embedding;
+                currentPuzzle = data.puzzle;
+            });
+        }
+
 
         function generatePuzzle() {
             clearInterval(timer);
@@ -99,6 +118,12 @@
         $(document).ready(function () {
             generatePuzzle();
         });
+
+        $('#user-word').on('keyup', function(event) {
+        if (event.key === 'Enter') {
+            submitAnswer();
+        }
+    });
     </script>
 </body>
 

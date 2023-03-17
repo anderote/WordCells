@@ -64,10 +64,22 @@ def generate_grammatical_puzzle():
         
     return puzzle, result_embedding
 
+# Add the following import
+from itertools import combinations
+
+# Update generate_puzzle() function
 @app.route("/generate_puzzle")
 def generate_puzzle():
-    puzzle, result_embedding = generate_grammatical_puzzle()
-    return jsonify({"puzzle": puzzle, "result_embedding": result_embedding.tolist()})
+    difficulty = int(request.args.get('difficulty', 2))  # Default difficulty is 2
+    if difficulty < 2 or difficulty > 4:
+        difficulty = 2  # Reset to default if an invalid difficulty is given
+
+    words = random.sample([word for word in common_nouns if word in glove_model], difficulty)
+
+    result_embedding = np.sum([glove_model[word] for word in words], axis=0)
+
+    return jsonify({"puzzle": " + ".join(words), "result_embedding": result_embedding.tolist()})
+
 
 @app.route("/calculate_similarity", methods=["POST"])
 def calculate_similarity():
