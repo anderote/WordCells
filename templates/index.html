@@ -10,7 +10,7 @@
 
 <body>
     <div class="main-content">
-        <h1>WordCell Game</h1>
+        <h1>WordCells</h1>
         <p>Solve the word-based arithmetic puzzle by entering a word that is close in meaning to the result of the given
             operation.</p>
             <select id="difficulty">
@@ -26,6 +26,10 @@
         <div id="timer">Time left: 30s</div>
         <div id="result"></div>
         <div id="score">Your WordCell Score: 0.00</div>
+    </div>
+    <div class="poem">
+        <h2>Poem</h2>
+        <p id="poem"></p>
     </div>
     <div class="history">
         <h2>History</h2>
@@ -47,45 +51,67 @@
                 $('#timer').text(`Time left: ${timeLeft}s`);
                 if (timeLeft === 0) {
                     clearInterval(timer);
-                    $('#result').text("Game Over");
-                    $('#submit-btn').prop('disabled', true);
+                    // Generate a new puzzle without adding the previous puzzle to the history
+                    $('#user-word').val('');
+                    generatePuzzle();
                 }
             }, 1000);
         }
 
+    function generatePoem(puzzle_words, user_words) {
+        $.post('/generate_poem', {
+            puzzle_words: puzzle_words.join(" + "),
+            user_words: JSON.stringify(user_words),
+        }, data => {
+            $('#poem').text(data.poem);
+        });
+    }
+
+    function generatePoemOnPuzzle(puzzleWords) {
+        $.post('/generate_poem_on_puzzle', {
+            puzzle_words: puzzleWords,
+        }, data => {
+            $('#poem').text(data.poem);
+        });
+    }
 
 
-        function generatePuzzle() {
-            clearInterval(timer);
-            startTimer();
-            const difficulty = $('#difficulty').val();
-            $.getJSON('/generate_puzzle', {difficulty: difficulty}, data => {
-                $('#puzzle').text(data.puzzle);
-                currentResultEmbedding = data.result_embedding;
-                currentPuzzle = data.puzzle;
-            });
-        }
+    function generatePuzzle() {
+        clearInterval(timer);
+        startTimer();
+        const difficulty = $('#difficulty').val();
+        $.getJSON('/generate_puzzle', {difficulty: difficulty}, data => {
+            $('#puzzle').text(data.puzzle);
+            currentResultEmbedding = data.result_embedding;
+            currentPuzzle = data.puzzle;
+        });
+        $('#user-word').val('');
+    }
 
 
-        function submitAnswer() {
-            clearInterval(timer);
-            const userWord = $('#user-word').val();
-            $.post('/calculate_similarity', {
-                user_word: userWord,
-                result_embedding: currentResultEmbedding,
-            }, data => {
-                if (data.error) {
-                    $('#result').text(data.error);
-                } else {
-                    currentScore += data.similarity;
-                    $('#result').text(`Similarity: ${data.similarity}`);
-                    $('#score').text(`Your WordCell Score: ${currentScore.toFixed(2)}`);
-                    addToHistory(currentPuzzle, userWord, data.similarity);
-                    $('#user-word').val('');
-                    generatePuzzle();  // generate a new puzzle
-                }
-            });
-        }
+    function submitAnswer() {
+        clearInterval(timer);
+        const userInput = $('#user-word').val();
+        const userWords = userInput.split(/[ ,+]+/).filter(Boolean); // Split input by space, comma, or plus sign
+        $.post('/calculate_similarity', {
+            user_words: JSON.stringify(userWords), // Send the words as a JSON string
+            puzzle_words: currentPuzzle, // Send the puzzle words
+            result_embedding: currentResultEmbedding,
+        }, data => {
+            if (data.error) {
+                $('#result').text(data.error);
+            } else {
+                currentScore += data.similarity;
+                $('#result').text(`Similarity: ${data.similarity}`);
+                $('#score').text(`Your WordCell Score: ${currentScore.toFixed(2)}`);
+                addToHistory(currentPuzzle, userInput, data.similarity);
+                // generatePoem(puzzle_words, user_words);
+            }
+            // Clear the text entry box and generate a new puzzle
+            $('#user-word').val('');
+            generatePuzzle();
+        });
+    }
 
 
         function addToHistory(puzzle, userWord, similarity) {

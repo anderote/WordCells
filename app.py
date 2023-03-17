@@ -3,9 +3,37 @@ import random
 import numpy as np
 from sklearn.metrics.pairwise import cosine_similarity
 import os
+import json
+import openai
+import threading
 
 
 app = Flask(__name__)
+
+
+# Add a function to load the API key with a timeout
+def load_api_key_with_timeout(file_path, timeout=30):
+    api_key = None
+
+    def load_key():
+        nonlocal api_key
+        with open(file_path, 'r') as f:
+            api_key = f.read().strip()
+
+    load_key_thread = threading.Thread(target=load_key)
+    load_key_thread.start()
+    load_key_thread.join(timeout)
+
+    if load_key_thread.is_alive():
+        app.logger.error("Loading API key timed out.")
+        load_key_thread.join()  # Ensure the thread is joined even after timeout
+        return None
+
+    return api_key
+
+# Load the API key with a timeout
+api_key_path = 'api_key.txt'
+openai.api_key = load_api_key_with_timeout(api_key_path)
 
 def load_glove_embeddings(file_path):
     embeddings = {}
@@ -81,18 +109,70 @@ def generate_puzzle():
     return jsonify({"puzzle": " + ".join(words), "result_embedding": result_embedding.tolist()})
 
 
+# Update calculate_similarity() function
+# Import json at the beginning of the file
+# Update calculate_similarity() function
 @app.route("/calculate_similarity", methods=["POST"])
 def calculate_similarity():
-    user_word = request.form["user_word"]
+    user_words = request.form["user_words"]
+    user_words = json.loads(user_words)  # Deserialize the JSON string
     result_embedding = np.array(request.form.getlist("result_embedding[]"), dtype=np.float32)
 
-    if user_word in glove_model:
-        user_embedding = glove_model[user_word]
-        similarity = cosine_similarity([user_embedding], [result_embedding])[0][0]
-        similarity = float(np.round(similarity, 2))
-        return jsonify({"similarity": round(similarity, 2)})
+    puzzle_words = request.form["puzzle_words"].split(" + ")  # Get the puzzle words and split them
+
+    user_embeddings = []
+    matched_words = 0
+
+    for user_word in user_words:
+        if user_word in glove_model:
+            if user_word not in puzzle_words:
+                user_embeddings.append(glove_model[user_word])
+            else:
+                matched_words += 1
+        else:
+            return jsonify({"error": f"Invalid input: {user_word} is not in the vocabulary."})
+
+    if matched_words == len(user_words):
+        similarity = 0.0
     else:
-        return jsonify({"error": "Invalid input. Please enter a word from the vocabulary."})
+        user_combined_embedding = np.sum(user_embeddings, axis=0)
+        similarity = cosine_similarity([user_combined_embedding], [result_embedding])[0][0]
+        similarity = float(np.round(similarity, 2))
+
+    return jsonify({"similarity": round(similarity, 2)})
+
+
+# Add a function to generate a poem using ChatGPT
+def generate_poem(prompt):
+    response = openai.Completion.create(
+        engine="text-davinci-002",
+        prompt=prompt,
+        max_tokens=50,
+        n=1,
+        stop=None,
+        temperature=0.5,
+    )
+    return response.choices[0].text.strip()
+
+
+# Add a new route to generate a two-line poem when the puzzle generates
+@app.route("/generate_poem_on_puzzle", methods=["POST"])
+def generate_poem_on_puzzle():
+    puzzle_words = request.form["puzzle_words"]
+    prompt = f"Write me a two-line poem with rhyme scheme AB that includes the following words: {puzzle_words}"
+    poem = generate_poem(prompt)
+    return jsonify({"poem": poem})
+
+# Add a new route to finish the poem when the user submits their words
+@app.route("/generate_poem_on_submit", methods=["POST"])
+def generate_poem_on_submit():
+    user_words = request.form["user_words"]
+    starting_poem = request.form["starting_poem"]
+    prompt = f"Finish the following two-line poem with rhyme scheme AB by adding two more lines with rhyme scheme AB that include the following words: {user_words}\n\n{starting_poem}"
+    finished_poem = generate_poem(prompt)
+    return jsonify({"poem": finished_poem})
+
+
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(debug=True, port=5000)
