@@ -27,10 +27,6 @@
         <div id="result"></div>
         <div id="score">Your WordCell Score: 0.00</div>
     </div>
-    <div class="poem">
-        <h2>Poem</h2>
-        <p id="poem"></p>
-    </div>
     <div class="history">
         <h2>History</h2>
         <ul id="history-list"></ul>
@@ -120,7 +116,6 @@
             setTimeout(() => {
                 $('#user-word').removeClass('correct wrong');
             }, 2000);
-            // generatePoem(puzzle_words, user_words);
         }
         // Clear the text entry box and generate a new puzzle
         $('#user-word').val('');

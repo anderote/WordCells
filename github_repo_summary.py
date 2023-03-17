@@ -1,7 +1,7 @@
 import os
 from pathlib import Path
 
-code_filetypes = {".py", ".html", ".json", ".h", ".cpp"}
+code_filetypes = {".py", ".html", ".json", ".css"}
 excluded_filetypes = {".csv", ".txt", ".md"}
 
 preamble = "I wrote a game where users solve puzzles to score points, \
@@ -46,7 +46,7 @@ def generate_summary_markdown(directory, repo_path=""):
     return markdown_lines
 
 
-summary_markdown = ["# GitHub Repo Summary\n"]
+summary_markdown = [preamble + "\n", "# GitHub Repo Summary\n" ]
 summary_markdown.extend(generate_summary_markdown(os.getcwd()))
 
 with open("github_repo_summary.md", "w") as summary_file:
