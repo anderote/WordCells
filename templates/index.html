@@ -10,161 +10,107 @@
 
 <body>
     <div class="start-screen">
-        <h1>Welcome to WordCells</h1>
-        <p>
-            WordCells is a word-based arithmetic puzzle game. Solve the puzzle by entering a word that is close in
-            meaning
-            to the result of the given operation.</br></br> Your WordCell score increases based on the similarity of
-            your answer
-            to the word at vector location of the actual sum.</br></br> You have 30 seconds per puzzle. The game is over
-            when the
-            timer runs out. </br></br>Good luck!
-        </p>
-        <button id="start-btn">Start</button>
+        <h1>Welcome to WordCells!</h1>
+        <p>In this game, you'll solve word-based arithmetic puzzles by entering a word that is close in meaning to the
+            result of the given operation. Press "Start" to begin!</p>
+        <button id="start-btn" style="display: inline-block; margin: 0 auto;">Start</button>
     </div>
-    <div class="main-content" style="display: none;">
+    < <div class="main-content" style="display: none;">
         <h1>WordCells</h1>
         <p>Solve the word-based arithmetic puzzle by entering a word that is close in meaning to the result of the given
             operation.</p>
-        <select id="difficulty">
-            <option value="2" selected>Easy (2 words)</option>
-            <option value="3">Medium (3 words)</option>
-            <option value="4">Hard (4 words)</option>
-        </select>
         <div id="puzzle"></div>
         <input type="text" id="user-word" placeholder="Enter your answer here">
         <button id="submit-btn" onclick="submitAnswer()">Submit</button>
         <button id="new-puzzle-btn" onclick="generatePuzzle()">New Puzzle</button>
-        <div id="timer">Time left: 30s</div>
         <div id="result"></div>
         <div id="score">Your WordCell Score: 0.00</div>
-    </div>
-    <div class="poem">
-        <h2>Poem</h2>
-        <p id="poem"></p>
-    </div>
-    <div class="history">
-        <h2>History</h2>
-        <ul id="history-list"></ul>
-    </div>
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script>
-        let currentScore = 0;
-        let currentResultEmbedding = [];
-        let currentPuzzle = '';
-        let timer;
-        let timeLeft = 30;
+        </div>
+        <div class="poem">
+            <h2>Poem</h2>
+            <p id="poem"></p>
+        </div>
+        <div class="history">
+            <h2>History</h2>
+            <ul id="history-list"></ul>
+        </div>
+        <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+        <script>
+            let currentScore = 0;
+            let currentResultEmbedding = [];
+            let currentPuzzle = '';
 
-        function startGame() {
-            $('.start-screen').hide();
-            $('.main-content').show();
-            generatePuzzle();
-        }
-
-        function startTimer() {
-            timeLeft = 30;
-            $('#timer').text(`Time left: ${timeLeft}s`);
-            timer = setInterval(() => {
-                timeLeft--;
-                $('#timer').text(`Time left: ${timeLeft}s`);
-                if (timeLeft <= 0) {
-                    timeLeft = 0;
-                    clearInterval(timer);
-                    $('#user-word').val('');
-                    $('#timer').text('Time left: 0s');
-                    $('#result').text("Game Over! Time's up.");
-                    $('#score').text(`Your Final WordCell Score: ${currentScore.toFixed(2)}`);
-                    $('#submit-btn').prop('disabled', true);
-                    $('#new-puzzle-btn').prop('disabled', true);
-                    gameOver();
-                } else {
-                    $('#timer').text(`Time left: ${timeLeft}s`);
-                }
-            }, 1000);
-        }
-
-
-
-        function generatePoem(puzzle_words, user_words) {
-            $.post('/generate_poem', {
-                puzzle_words: puzzle_words.join(" + "),
-                user_words: JSON.stringify(user_words),
-            }, data => {
-                $('#poem').text(data.poem);
-            });
-        }
-
-        function generatePoemOnPuzzle(puzzleWords) {
-            $.post('/generate_poem_on_puzzle', {
-                puzzle_words: puzzleWords,
-            }, data => {
-                $('#poem').text(data.poem);
-            });
-        }
-
-        function generatePuzzle() {
-            if (timer) {
-                clearInterval(timer);
+            function generatePoem(puzzle_words, user_words) {
+                $.post('/generate_poem', {
+                    puzzle_words: puzzle_words.join(" + "),
+                    user_words: JSON.stringify(user_words),
+                }, data => {
+                    $('#poem').text(data.poem);
+                });
             }
-            startTimer();
-            const difficulty = $('#difficulty').val();
-            $.getJSON('/generate_puzzle', { difficulty: difficulty }, data => {
-                $('#puzzle').text(data.puzzle);
-                currentResultEmbedding = data.result_embedding;
-                currentPuzzle = data.puzzle;
 
-                // Call generate_poem_on_puzzle when a new puzzle is generated
-                generatePoemOnPuzzle(data.puzzle);
-            });
-            $('#user-word').val('');
-        }
+            function generatePoemOnPuzzle(puzzleWords) {
+                $.post('/generate_poem_on_puzzle', {
+                    puzzle_words: puzzleWords,
+                }, data => {
+                    $('#poem').text(data.poem);
+                });
+            }
 
+            function generatePuzzle() {
+                $.getJSON('/generate_puzzle', data => {
+                    $('#puzzle').text(data.puzzle);
+                    currentResultEmbedding = data.result_embedding;
+                    currentPuzzle = data.puzzle;
+                    generatePoemOnPuzzle(data.puzzle);
 
-
-        function submitAnswer() {
-            clearInterval(timer);
-            gameRunning = false;
-            const userInput = $('#user-word').val();
-            const userWords = userInput.split(/[ ,+]+/).filter(Boolean); // Split input by space, comma, or plus sign
-            $.post('/calculate_similarity', {
-                user_words: JSON.stringify(userWords), // Send the words as a JSON string
-                puzzle_words: currentPuzzle, // Send the puzzle words
-                result_embedding: currentResultEmbedding,
-            }, data => {
-                if (data.error) {
-                    $('#result').text(data.error);
-                } else {
-                    // Convert the score from a string to a number before updating currentScore
-                    currentScore += parseFloat(data.similarity); // Update the current score based on the sum of similarities
-                    $('#result').text(`Similarity: ${data.similarity}`);
-                    $('#score').text(`Your WordCell Score: ${currentScore.toFixed(2)}`);
-                    addToHistory(currentPuzzle, userInput, data.similarity, data.similarity);
-                }
-                // Clear the text entry box and generate a new puzzle
+                });
                 $('#user-word').val('');
-                generatePuzzle();
-            });
-        }
-
-
-
-
-        function addToHistory(puzzle, userWord, similarity, score) {
-            const listItem = $('<li>').text(`Puzzle: ${puzzle}, Your Word: ${userWord}, Similarity: ${similarity}, Score: ${score}`);
-            $('#history-list').append(listItem);
-        }
-
-        // Initialize the game
-        $(document).ready(function () {
-            $('#start-btn').on('click', startGame);
-        });
-
-        $('#user-word').on('keyup', function (event) {
-            if (event.key === 'Enter') {
-                submitAnswer();
             }
-        });
-    </script>
+
+            function submitAnswer() {
+                const userInput = $('#user-word').val();
+                const userWords = userInput.split(/[ ,+]+/).filter(Boolean);
+                $.post('/calculate_similarity', {
+                    user_words: JSON.stringify(userWords),
+                    puzzle_words: currentPuzzle,
+                    result_embedding: currentResultEmbedding,
+                }, data => {
+                    if (data.error) {
+                        $('#result').text(data.error);
+                    } else {
+                        currentScore += data.score;
+                        $('#result').text(`Similarity: ${data.similarity}`);
+                        $('#score').text(`Your WordCell Score: ${currentScore.toFixed(2)}`);
+                        addToHistory(currentPuzzle, userInput, data.similarity, data.score);
+                    }
+                    $('#user-word').val(''); // Clear the text entry box
+                });
+            }
+
+
+
+
+            function addToHistory(puzzle, userWord, similarity, score) {
+                const listItem = $('<li>').text(`Puzzle: ${puzzle}, Your Word: ${userWord}, Similarity: ${similarity}, Score: ${score}`);
+                $('#history-list').append(listItem);
+            }
+
+            // Initialize the game
+            $(document).ready(function () {
+                $('#start-btn').on('click', function () {
+                    $('.start-screen').hide();
+                    $('.main-content').show();
+                    generatePuzzle();
+                });
+            });
+
+            $('#user-word').on('keyup', function (event) {
+                if (event.key === 'Enter') {
+                    submitAnswer();
+                }
+            });
+        </script>
 </body>
 
 </html>
