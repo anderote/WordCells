@@ -1,83 +1,53 @@
 body {
-    font-family: Arial, sans-serif;
+    font-family: "Courier New", Courier, monospace;
+    background-color: #1e1e1e;
+    color: #a9b7c6;
     margin: 0;
     padding: 0;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    min-height: 100vh;
-    flex-direction: column;
-    background-image: linear-gradient(to bottom, #add8e6, #9370db);
 }
 
-h1 {
-    font-size: 2.5em;
-    margin-bottom: 0.5em;
-    color: #333333;
+.main-content,
+.start-screen,
+.poem,
+.history {
+    max-width: 800px;
+    margin: 20px auto;
+    padding: 20px;
+    background-color: #3c3f41;
+    border-radius: 5px;
+    box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.5);
 }
 
-p {
-    font-size: 1.1em;
-    color: #333333;
-    text-align: center;
-    max-width: 500px;
-}
-
-#puzzle {
-    font-size: 1.5em;
-    font-weight: bold;
-    color: #333333;
-    margin-bottom: 1em;
+input,
+button {
+    font-family: "Courier New", Courier, monospace;
+    background-color: #a9b7c6;
+    color: #1e1e1e;
+    border: none;
+    padding: 5px 10px;
+    margin: 5px;
+    cursor: pointer;
+    border-radius: 5px;
 }
 
 input {
-    font-size: 1.2em;
-    padding: 0.5em;
     width: 300px;
-    margin-right: 0.5em;
-    color: #333;
 }
 
-button {
-    font-size: 1.2em;
-    padding: 0.5em;
-    background-color: #ffffff;
-    color: #9370db;
-    border: 1px solid #9370db;
-    cursor: pointer;
+input:focus,
+button:focus {
+    outline: none;
 }
 
 button:hover {
-    background-color: #9370db;
-    color: #ffffff;
+    background-color: #d4d4d4;
 }
 
-button:disabled {
-    background-color: #c0c0c0;
-    cursor: not-allowed;
+h1, h2, p {
+    margin-top: 0;
 }
 
-#result {
-    font-size: 1.2em;
-    margin-bottom: 1em;
-    color: #ff0000;
-}
-
-#score {
-    font-size: 1.2em;
-    font-weight: bold;
-    color: #333333;
-}
-
-.start-screen {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    height: 100vh;
-    text-align: center;
-}
-
-.start-screen h1 {
-    margin-bottom: 20px;
+ul {
+    list-style-type: none;
+    padding: 0;
 }
