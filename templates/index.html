@@ -5,6 +5,19 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <style>
+        .cursor {
+            animation: blink .75s step-end infinite;
+            border-right: 1px solid;
+            margin-left: 2px;
+        }
+
+        @keyframes blink {
+            50% {
+                border-color: transparent;
+            }
+        }
+    </style>
     <title>WordCell Game</title>
 </head>
 
@@ -92,8 +105,20 @@
 
 
             function addToHistory(puzzle, userWord, similarity, score) {
-                const listItem = $('<li>').text(`Puzzle: ${puzzle}, Your Word: ${userWord}, Similarity: ${similarity}, Score: ${score}`);
+                const listItem = $('<li>');
+                const textContent = `Puzzle: ${puzzle}, Your Word: ${userWord}, Similarity: ${similarity}, Score: ${score}`;
                 $('#history-list').append(listItem);
+                typeResult(listItem, textContent, 0);
+            }
+
+            function typeResult(element, text, index) {
+                if (index < text.length) {
+                    element.append(text[index]);
+                    setTimeout(() => typeResult(element, text, index + 1), 50);
+                } else {
+                    element.append('<span class="cursor"></span>');
+                    setTimeout(() => element.find('.cursor').remove(), 1000);
+                }
             }
 
             // Initialize the game
