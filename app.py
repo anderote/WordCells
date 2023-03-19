@@ -104,10 +104,10 @@ def generate_puzzle():
     if difficulty < 2 or difficulty > 4:
         difficulty = 2
 
-    # TODO: implement more types of puzzle formats, i.e. verb + adjectives, or noun + adjectives
+    # TODO: implement more types of puzzle formats, i.e. verb + adjectives, or noun + adjectives, synonyms, antonyms
     words = random.sample([word for word in common_adjectives if word in glove_model], difficulty-1)
     primary_noun = random.sample(common_nouns, 1)[0]
-    words.insert(0, primary_noun)
+    words.append(primary_noun)
 
     result_embedding = np.sum([glove_model[word] for word in words], axis=0)
 

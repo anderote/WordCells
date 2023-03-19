@@ -23,28 +23,25 @@
 
 <body>
     <div class="start-screen">
-        <h1>Welcome to WordCells!</h1>
-        <p>In this game, you'll solve word-based arithmetic puzzles by entering a word that is close in meaning to the
-            result of the given operation. Press "Start" to begin!</p>
+        <h1>WordCeLLM</h1>
+        <p>You are a large language model tasked with predicting the equivalent token based on user input. Type your replies into the text box
+            as fast as possible, using "Enter" to submit your reply and "Shift+Enter" to receive the next prompt.
+        </p>
         <button id="start-btn" style="display: inline-block; margin: 0 auto;">Start</button>
     </div>
     < <div class="main-content" style="display: none;">
         <h1>WordCells</h1>
-        <p>Solve the word-based arithmetic puzzle by entering a word that is close in meaning to the result of the given
-            operation. <br> Enter = submit answer; <br> Shift+Enter = new puzzle.</p>
+        <p>Respond to the user prompts and make them happy.<br> Enter = submit answer; Shift+Enter = next prompt.</p>
         <div id="puzzle"></div>
-        <input type="text" id="user-word" placeholder="Enter your answer here">
-        <button id="submit-button" class="btn btn-primary">Submit</button>
+        <input type="text" id="user-word" placeholder="predict equivalent token">
+        <button id="submit-button" class="btn btn-primary">reply</button> <button type="button" id="generateBtn">next
+            prompt</button>
         <div id="result"></div>
-        <div id="score">Your WordCell Score: 0.00</div>
+        <div id="score">User Satisfaction</div>
         <p id="correct-answer" class="correct-answer"></p>
         </div>
-        <div class="poem">
-            <h2>Poem</h2>
-            <p id="poem"></p>
-        </div>
         <div class="history">
-            <h2>History</h2>
+            <h2>terminal</h2>
             <ul id="history-list"></ul>
         </div>
         <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
@@ -109,7 +106,7 @@
                             currentScore += data.score;
                             $('#result').text(`Similarity: ${data.similarity}`);
                             $('#score').text(`Your WordCell Score: ${currentScore.toFixed(2)}`);
-                            addToHistory(currentPuzzle, userInput, data.similarity, data.score, currentCorrectAnswer);
+                            addToHistory(currentPuzzle, userInput, data.similarity, data.score);
                         }
                         $('#user-word').val(''); // Clear the text entry box
                     });
@@ -117,18 +114,33 @@
             }
 
 
-            function addToHistory(puzzle, userWord, similarity, score, correctAnswer) {
+            function addToHistory(puzzle, userWord, similarity, score) {
                 const listItem = $('<li>');
-                const textContent = `Puzzle: ${puzzle}, Your Word: ${userWord}, Similarity: ${similarity}, Score: ${score}`;
-                $('#history-list').append(listItem);
+                let satisfaction_score = '';
+                const textContent = `prompt: ${puzzle}, output: ${userWord}, cosine projection: ${similarity}`;
+                const color = getColor(similarity);
+
+                listItem.css('color', color)
+                
+                $('#history-list').prepend(listItem);
                 typeResult(listItem, textContent, 0);
+            }
+
+            function getColor(similarity) {
+                if (similarity >= 0.5) {
+                    return 'limegreen';
+                } else if (similarity >= 0.3) {
+                    return 'gray';
+                } else {
+                    return 'red';
+                }
             }
 
 
             function typeResult(element, text, index) {
                 if (index < text.length) {
                     element.append(text[index]);
-                    setTimeout(() => typeResult(element, text, index + 1), 50);
+                    setTimeout(() => typeResult(element, text, index + 1), 25);
                 } else {
                     element.append('<span class="cursor"></span>');
                     setTimeout(() => element.find('.cursor').remove(), 1000);
@@ -148,6 +160,10 @@
 
                 }
             }
+            // Event listener for the Generate Puzzle button
+            document.getElementById("generateBtn").addEventListener("click", function () {
+                generatePuzzle();
+            });
 
             // Initialize the game
             $(document).ready(function () {
