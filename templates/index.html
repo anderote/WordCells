@@ -54,6 +54,8 @@
             let currentPuzzle = '';
             let currentCorrectAnswer = '';
             let previousCorrectAnswer = '';
+            const userInput = document.getElementById('user-word');
+            userInput.addEventListener('keydown', handleEnterKey);
 
             function generatePoem(puzzle_words, user_words) {
                 $.post('/generate_poem', {
@@ -133,6 +135,20 @@
                 }
             }
 
+            function handleEnterKey(event) {
+                if (event.keyCode === 13) { // 13 is the keycode for the 'enter' key
+                    event.preventDefault(); // Prevent any default behavior (e.g., form submission
+                    // If Shift is also pressed, generate a new puzzle
+                    if (event.shiftKey) {
+                        generatePuzzle();
+                    } else {
+                        // If only Enter is pressed, submit the answer
+                        submitAnswer();
+                    }
+
+                }
+            }
+
             // Initialize the game
             $(document).ready(function () {
                 $('#start-btn').on('click', function () {
@@ -145,16 +161,7 @@
                 // Add an event listener for input keydown
                 $("#user-answer").on("keyup", function (event) {
                     // Check if the 'Enter' key is pressed
-                    if (event.key === 'Enter') {
 
-                        // If Shift is also pressed, generate a new puzzle
-                        if (event.shiftKey) {
-                            generatePuzzle();
-                        } else {
-                            // If only Enter is pressed, submit the answer
-                            submitAnswer();
-                        }
-                    }
                 });
 
                 // Add a click event listener for the submit button
