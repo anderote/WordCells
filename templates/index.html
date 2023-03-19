@@ -31,7 +31,7 @@
     < <div class="main-content" style="display: none;">
         <h1>WordCells</h1>
         <p>Solve the word-based arithmetic puzzle by entering a word that is close in meaning to the result of the given
-            operation.</p>
+            operation. <br> Enter = submit answer; <br> Shift+Enter = new puzzle.</p>
         <div id="puzzle"></div>
         <input type="text" id="user-word" placeholder="Enter your answer here">
         <button id="submit-button" class="btn btn-primary">Submit</button>
@@ -76,7 +76,7 @@
 
             function generatePuzzle() {
                 if (previousCorrectAnswer) {
-                    $("#correct-answer").text("Correct answer: " + previousCorrectAnswer);
+                    $("#correct-answer").text("Best previous answer: " + previousCorrectAnswer);
                 }
                 $.getJSON('/generate_puzzle', data => {
                     $('#puzzle').text(data.puzzle);
@@ -157,6 +157,9 @@
                     $("#correct-answer").text('');
                     generatePuzzle();
                 });
+
+                // populate correct answer field
+                $("#correct-answer").text('');
 
                 // Add an event listener for input keydown
                 $("#user-answer").on("keyup", function (event) {
