@@ -19,12 +19,12 @@
             }
         }
     </style>
-    <title>WordCell Game</title>
+    <title>WordCeLL-M</title>
 </head>
 
 <body>
     <div class="start-screen">
-        <h1>WordCeLLM</h1>
+        <h1>WordCeLL-M</h1>
         <p>You are a large language model tasked with predicting the equivalent token based on user input. Type your
             replies into the text box as fast as possible, using "Enter" to submit your reply and "Shift+Enter" to
             receive the next prompt.
@@ -32,26 +32,36 @@
         <button id="start-btn" style="display: inline-block; margin: 0 auto;">Start</button>
     </div>
     < <div class="main-content" style="display: none;">
-        <h1>WordCells</h1>
+        <div id="midi-controls">
+            <button id="toggle-midi" onclick="toggleMidi()" disabled>Toggle MIDI</button>
+        </div>
+        <h1>WordCeLL-M</h1>
         <p>Respond to the user prompts and make them happy.<br> Enter = submit answer; Shift+Enter = next prompt.</p>
         <div id="puzzle"></div>
         <input type="text" id="user-word" placeholder="predict equivalent token">
         <button id="submit-button" class="btn btn-primary">reply</button> <button type="button" id="generateBtn">next
             prompt</button>
-        <div id="result"></div>
-        <div id="score">User Satisfaction</div>
+        <div id="score"></div>
         <p id="correct-answer" class="correct-answer"></p>
         </div>
         <div class="history">
             <ul id="history-list"></ul>
         </div>
+
         <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/webmidi"></script>
+        <script src="https://cdn.jsdelivr.net/npm/midi-file"></script>
+
+
+
         <script>
             let currentScore = 0;
             let currentResultEmbedding = [];
             let currentPuzzle = '';
             let currentCorrectAnswer = '';
             let previousCorrectAnswer = '';
+            let submittedWords = new Set();
+
             const userInput = document.getElementById('user-word');
             userInput.addEventListener('keydown', handleEnterKey);
 
@@ -83,6 +93,7 @@
                     previousCorrectAnswer = currentCorrectAnswer;
                     currentCorrectAnswer = data.correct_answer;
                     addPromptToHistory(data.puzzle);
+                    submittedWords.clear();
                     // Store the correct answer
                     // generatePoemOnPuzzle(data.puzzle);
                 });
@@ -93,9 +104,19 @@
                 const userWords = userInput.split(/[ ,+]+/).filter(Boolean);
 
                 if (userWords === '') {
-                    // If empty, generate a new puzzle
-                    generatePuzzle();
+                    return
                 } else {
+                    for (const word of userWords) {
+                        if (submittedWords.has(word)) {
+                            // Display an error message and return without submitting the answer
+                            $('#score').text(`Error: You have already submitted "${word}". Try different words.`).color('red');
+                            return;
+                        }
+                    }
+
+                    for (const word of userWords) {
+                        submittedWords.add(word);
+                    }
 
                     $.post('/calculate_similarity', {
                         user_words: JSON.stringify(userWords),
@@ -106,9 +127,9 @@
                             $('#result').text(data.error);
                         } else {
                             currentScore += data.score;
-                            $('#result').text(`Similarity: ${data.similarity}`);
-                            $('#score').text(`Your WordCell Score: ${currentScore.toFixed(2)}`);
+                            $('#score').text(`alignment score: ${currentScore.toFixed(2)}`);
                             addReplyToHistory(userInput, data.similarity);
+
                         }
                         $('#user-word').val(''); // Clear the text entry box
                     });
@@ -169,6 +190,86 @@
 
                 }
             }
+
+            async function loadMidi() {
+                try {
+                    await WebMidi.enable();
+                    const midiOutput = WebMidi.outputs[0];
+                    if (midiOutput) {
+                        playMidi(midiOutput, callback);
+                        document.getElementById("toggle-midi").disabled = false;
+                    } else {
+                        console.log("No MIDI output devices found.");
+                    }
+                } catch (error) {
+                    console.error("Failed to enable WebMidi:", error);
+                }
+            }
+
+
+            async function playMidi(midiOutput, callback) {
+                const midiFileUrl = "/static/midi/alive.mid";
+                const midiFile = await fetch(midiFileUrl).then((response) => response.arrayBuffer());
+                const midi = new Midi(midiFile);
+
+                let currentTime = 0;
+                let isPlaying = false;
+
+                function playNextEvent() {
+                    if (!isPlaying) return;
+
+                    const event = midi.tracks[0].shift();
+                    if (!event) return;
+
+                    currentTime += event.deltaTime * (60000 / (midi.header.tempos[0].bpm * midi.header.ppq));
+
+                    if (event.type === "noteOn") {
+                        midiOutput.playNote(event.note.number, 1, { duration: event.duration * (60000 / (midi.header.tempos[0].bpm * midi.header.ppq)) });
+                    }
+
+                    if (midi.tracks[0].length > 0) {
+                        setTimeout(playNextEvent, currentTime);
+                    }
+                }
+
+                midiOutput.start = function () {
+                    if (!isPlaying) {
+                        isPlaying = true;
+                        playNextEvent();
+                    }
+                };
+
+                midiOutput.pause = function () {
+                    isPlaying = false;
+                };
+
+                midiOutput.resume = function () {
+                    if (!isPlaying) {
+                        isPlaying = true;
+                        playNextEvent();
+                    }
+                };
+
+                if (typeof callback === "function") {
+                    callback();
+                }
+            }
+
+
+            function toggleMidi() {
+                const midiOutput = WebMidi.outputs[0];
+                if (!midiOutput) return;
+
+                if (midiOutput.isPlaying) {
+                    midiOutput.pause();
+                    document.getElementById("toggle-midi").innerHTML = "Resume MIDI";
+                } else {
+                    midiOutput.resume();
+                    document.getElementById("toggle-midi").innerHTML = "Pause MIDI";
+                }
+            }
+
+
             // Event listener for the Generate Puzzle button
             document.getElementById("generateBtn").addEventListener("click", function () {
                 generatePuzzle();
@@ -181,6 +282,10 @@
                     $('.main-content').show();
                     $("#correct-answer").text('');
                     generatePuzzle();
+
+                    if (WebMidi.outputs[0] && !WebMidi.outputs[0].isPlaying) {
+                        WebMidi.outputs[0].start();
+                    }
                 });
 
                 // populate correct answer field
@@ -199,6 +304,7 @@
             });
 
 
+            loadMidi();
 
         </script>
 </body>
