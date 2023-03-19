@@ -52,6 +52,7 @@
             let currentScore = 0;
             let currentResultEmbedding = [];
             let currentPuzzle = '';
+            let currentCorrectAnswer = '';
 
             function generatePoem(puzzle_words, user_words) {
                 $.post('/generate_poem', {
@@ -75,10 +76,9 @@
                     $('#puzzle').text(data.puzzle);
                     currentResultEmbedding = data.result_embedding;
                     currentPuzzle = data.puzzle;
-                    generatePoemOnPuzzle(data.puzzle);
-
+                    currentCorrectAnswer = data.correct_answer; // Store the correct answer
+                    // generatePoemOnPuzzle(data.puzzle);
                 });
-                $('#user-word').val('');
             }
 
             function submitAnswer() {
@@ -95,21 +95,20 @@
                         currentScore += data.score;
                         $('#result').text(`Similarity: ${data.similarity}`);
                         $('#score').text(`Your WordCell Score: ${currentScore.toFixed(2)}`);
-                        addToHistory(currentPuzzle, userInput, data.similarity, data.score);
+                        addToHistory(currentPuzzle, userInput, data.similarity, data.score, currentCorrectAnswer);
                     }
                     $('#user-word').val(''); // Clear the text entry box
                 });
             }
 
 
-
-
-            function addToHistory(puzzle, userWord, similarity, score) {
+            function addToHistory(puzzle, userWord, similarity, score, correctAnswer) {
                 const listItem = $('<li>');
-                const textContent = `Puzzle: ${puzzle}, Your Word: ${userWord}, Similarity: ${similarity}, Score: ${score}`;
+                const textContent = `Puzzle: ${puzzle}, Your Word: ${userWord}, Similarity: ${similarity}, Score: ${score}, Correct Answer: ${correctAnswer}`;
                 $('#history-list').append(listItem);
                 typeResult(listItem, textContent, 0);
             }
+
 
             function typeResult(element, text, index) {
                 if (index < text.length) {

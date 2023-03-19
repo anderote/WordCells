@@ -6,6 +6,8 @@ import os
 import json
 import openai
 import threading
+from threading import Thread
+from queue import Queue
 
 
 app = Flask(__name__)
@@ -67,6 +69,7 @@ common_nouns = load_common_nouns(common_nouns_path)
 common_adjectives_path = 'wordlists/adjectives.txt'
 common_adjectives = load_common_adjectives(common_adjectives_path)
 
+
 @app.route("/")
 def index():
     return render_template("index.html")
@@ -95,19 +98,41 @@ def generate_grammatical_puzzle():
 # Add the following import
 from itertools import combinations
 
-# Update generate_puzzle() function
 @app.route("/generate_puzzle")
 def generate_puzzle():
     difficulty = int(request.args.get('difficulty', 2))
     if difficulty < 2 or difficulty > 4:
         difficulty = 2
 
-    words = random.sample([word for word in common_nouns if word in glove_model], difficulty)
+    # TODO: implement more types of puzzle formats, i.e. verb + adjectives, or noun + adjectives
+    words = random.sample([word for word in common_adjectives if word in glove_model], difficulty-1)
+    primary_noun = random.sample(common_nouns, 1)[0]
+    words.insert(0, primary_noun)
 
     result_embedding = np.sum([glove_model[word] for word in words], axis=0)
 
-    return jsonify({"puzzle": " + ".join(words), "result_embedding": result_embedding.tolist()})
+    # Spawn a thread to find the correct answer
+    correct_answer_queue = Queue()
+    threading.Thread(target=find_correct_answer, args=(result_embedding, words, correct_answer_queue)).start()
 
+    correct_answer = correct_answer_queue.get()
+
+    return jsonify({"puzzle": " + ".join(words), "result_embedding": result_embedding.tolist(), "correct_answer": correct_answer})
+
+
+# Define a function to find the correct answer
+def find_correct_answer(result_embedding, puzzle_words, queue):
+    max_similarity = -1
+    correct_answer = None
+
+    for word in common_nouns:
+        if word in glove_model and word not in puzzle_words:
+            similarity = cosine_similarity([glove_model[word]], [result_embedding])[0][0]
+            if similarity > max_similarity:
+                max_similarity = similarity
+                correct_answer = word
+
+    queue.put(correct_answer)
 
 @app.route("/calculate_similarity", methods=["POST"])
 def calculate_similarity():
@@ -166,7 +191,8 @@ def generate_poem(prompt):
 def generate_poem_on_puzzle():
     puzzle_words = request.form["puzzle_words"]
     prompt = f"Write me a two-line poem with rhyme scheme AB that includes the following words: {puzzle_words}"
-    poem = generate_poem(prompt)
+    poem = 'poem goes here'
+    #poem = generate_poem(prompt)
     return jsonify({"poem": poem})
 
 # Add a new route to finish the poem when the user submits their words
@@ -175,11 +201,12 @@ def generate_poem_on_submit():
     user_words = request.form["user_words"]
     starting_poem = request.form["starting_poem"]
     prompt = f"Finish the following two-line poem with rhyme scheme AB by adding two more lines with rhyme scheme AB that include the following words: {user_words}\n\n{starting_poem}"
-    finished_poem = generate_poem(prompt)
+    finished_poem = ' made by gpt'
+    # finished_poem = generate_poem(prompt)
     return jsonify({"poem": finished_poem})
 
 
 
 if __name__ == "__main__":
-    # exec(open("github_repo_summary.py").read())
+    exec(open("github_repo_summary.py").read())
     app.run(debug=True, port=5005)

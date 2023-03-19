@@ -4,21 +4,20 @@ from pathlib import Path
 code_filetypes = {".py", ".html", ".json", ".h", ".cpp"}
 excluded_filetypes = {".csv", ".txt", ".md"}
 
-preamble = "I wrote a game where users solve puzzles to score points, \
-    and the puzzles are simple math equations using the vector embeddings \
-        of words, like nouns and verbs. Two random words are displayed with \
-        an addition sign between them, and the user tries to guess a word \
-        and submit it that is close in vector space to the resultant \
-        vector embedding of the two words. The code is organized \
-        as a python project that deploys via flask to a html \
-        website. There is an 'app.py' file and a 'templates/index.html'\
-        file as well as files that contain words like nouns, synonyms,\
-        antonyms, and adjectives located inside a 'wordlists' folder \
-        and saved as .txt files. \ You are going to develop some new features \
-        for the game after reading the existing codebase. The code is pasted \
-        below with the name of the file and then the code inside in markdown \
-            format. Let me know when you are ready and suggest three features \
-                that might make the game better."
+preamble = "I wrote a game where users solve puzzles to score points,\
+and the puzzles are simple math equations using the vector embeddings \
+of words, like nouns and verbs. Each puzzle has some random words displayed \
+ separated by addition signs, which are added together using the vector \
+embedding of those words producing a resultant vector or 'correct answer'.\
+ A user submits a word or several words that try to be close to the resultant \
+answer in the sense that the vector addition of the user's input words are close\
+ to the resultant vector. The code is organized as a python project that deploys\
+ via flask to a html website. There is an 'app.py' file and a 'templates/index.html' \
+file as well as files that contain words like nouns, synonyms, antonyms, and adjectives located \
+inside a 'wordlists' folder  and saved as .txt files.  You are going to develop some new \
+features for the game after reading the existing codebase. The code is pasted \
+below with the name of the file and then the code inside in markdown \
+format. Let me know when you are ready."
 
 def generate_summary_markdown(directory, repo_path=""):
     markdown_lines = []
@@ -46,7 +45,7 @@ def generate_summary_markdown(directory, repo_path=""):
     return markdown_lines
 
 
-summary_markdown = ["# GitHub Repo Summary\n"]
+summary_markdown = [preamble + "# GitHub Repo Summary\n"]
 summary_markdown.extend(generate_summary_markdown(os.getcwd()))
 
 with open("github_repo_summary.md", "w") as summary_file:
