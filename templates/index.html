@@ -34,10 +34,10 @@
             operation.</p>
         <div id="puzzle"></div>
         <input type="text" id="user-word" placeholder="Enter your answer here">
-        <button id="submit-btn" onclick="submitAnswer()">Submit</button>
-        <button id="new-puzzle-btn" onclick="generatePuzzle()">New Puzzle</button>
+        <button id="submit-button" class="btn btn-primary">Submit</button>
         <div id="result"></div>
         <div id="score">Your WordCell Score: 0.00</div>
+        <p id="correct-answer" class="correct-answer"></p>
         </div>
         <div class="poem">
             <h2>Poem</h2>
@@ -53,6 +53,7 @@
             let currentResultEmbedding = [];
             let currentPuzzle = '';
             let currentCorrectAnswer = '';
+            let previousCorrectAnswer = '';
 
             function generatePoem(puzzle_words, user_words) {
                 $.post('/generate_poem', {
@@ -72,10 +73,14 @@
             }
 
             function generatePuzzle() {
+                if (previousCorrectAnswer) {
+                    $("#correct-answer").text("Correct answer: " + previousCorrectAnswer);
+                }
                 $.getJSON('/generate_puzzle', data => {
                     $('#puzzle').text(data.puzzle);
                     currentResultEmbedding = data.result_embedding;
                     currentPuzzle = data.puzzle;
+                    previousCorrectAnswer = currentCorrectAnswer;
                     currentCorrectAnswer = data.correct_answer; // Store the correct answer
                     // generatePoemOnPuzzle(data.puzzle);
                 });
@@ -84,27 +89,35 @@
             function submitAnswer() {
                 const userInput = $('#user-word').val();
                 const userWords = userInput.split(/[ ,+]+/).filter(Boolean);
-                $.post('/calculate_similarity', {
-                    user_words: JSON.stringify(userWords),
-                    puzzle_words: currentPuzzle,
-                    result_embedding: currentResultEmbedding,
-                }, data => {
-                    if (data.error) {
-                        $('#result').text(data.error);
-                    } else {
-                        currentScore += data.score;
-                        $('#result').text(`Similarity: ${data.similarity}`);
-                        $('#score').text(`Your WordCell Score: ${currentScore.toFixed(2)}`);
-                        addToHistory(currentPuzzle, userInput, data.similarity, data.score, currentCorrectAnswer);
-                    }
-                    $('#user-word').val(''); // Clear the text entry box
-                });
+
+                if (userWords === '') {
+                    // If empty, generate a new puzzle
+                    generatePuzzle();
+                } else {
+
+
+                    $.post('/calculate_similarity', {
+                        user_words: JSON.stringify(userWords),
+                        puzzle_words: currentPuzzle,
+                        result_embedding: currentResultEmbedding,
+                    }, data => {
+                        if (data.error) {
+                            $('#result').text(data.error);
+                        } else {
+                            currentScore += data.score;
+                            $('#result').text(`Similarity: ${data.similarity}`);
+                            $('#score').text(`Your WordCell Score: ${currentScore.toFixed(2)}`);
+                            addToHistory(currentPuzzle, userInput, data.similarity, data.score, currentCorrectAnswer);
+                        }
+                        $('#user-word').val(''); // Clear the text entry box
+                    });
+                }
             }
 
 
             function addToHistory(puzzle, userWord, similarity, score, correctAnswer) {
                 const listItem = $('<li>');
-                const textContent = `Puzzle: ${puzzle}, Your Word: ${userWord}, Similarity: ${similarity}, Score: ${score}, Correct Answer: ${correctAnswer}`;
+                const textContent = `Puzzle: ${puzzle}, Your Word: ${userWord}, Similarity: ${similarity}, Score: ${score}`;
                 $('#history-list').append(listItem);
                 typeResult(listItem, textContent, 0);
             }
@@ -125,15 +138,33 @@
                 $('#start-btn').on('click', function () {
                     $('.start-screen').hide();
                     $('.main-content').show();
+                    $("#correct-answer").text('');
                     generatePuzzle();
+                });
+
+                // Add an event listener for input keydown
+                $("#user-answer").on("keyup", function (event) {
+                    // Check if the 'Enter' key is pressed
+                    if (event.key === 'Enter') {
+
+                        // If Shift is also pressed, generate a new puzzle
+                        if (event.shiftKey) {
+                            generatePuzzle();
+                        } else {
+                            // If only Enter is pressed, submit the answer
+                            submitAnswer();
+                        }
+                    }
+                });
+
+                // Add a click event listener for the submit button
+                $("#submit-button").on("click", function () {
+                    submitAnswer();
                 });
             });
 
-            $('#user-word').on('keyup', function (event) {
-                if (event.key === 'Enter') {
-                    submitAnswer();
-                }
-            });
+
+
         </script>
 </body>
 
