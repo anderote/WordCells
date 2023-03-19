@@ -1,6 +1,6 @@
 body {
     font-family: "Courier New", Courier, monospace;
-    background-color: #1e1e1e;
+    background-color: black;
     color: #a9b7c6;
     margin: 0;
     padding: 0;
@@ -16,6 +16,20 @@ body {
     background-color: #3c3f41;
     border-radius: 5px;
     box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.5);
+}
+
+#midi-controls {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+}
+
+#toggle-midi {
+    padding: 10px;
+    background-color: #333;
+    color: #fff;
+    border: none;
+    cursor: pointer;
 }
 
 input,
@@ -43,7 +57,9 @@ button:hover {
     background-color: #d4d4d4;
 }
 
-h1, h2, p {
+h1,
+h2,
+p {
     margin-top: 0;
 }
 
@@ -61,5 +77,6 @@ ul {
     white-space: pre-wrap;
     overflow: auto;
     width: 100%;
-    max-height: 300px; /* Set the maximum height as desired */
+    max-height: 300px;
+    /* Set the maximum height as desired */
 }
