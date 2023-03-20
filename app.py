@@ -192,5 +192,5 @@ def generate_poem_on_submit():
 
 
 if __name__ == "__main__":
-    exec(open("github_repo_summary.py").read())
+    # exec(open("github_repo_summary.py").read())
     app.run(debug=True, port=5005)
