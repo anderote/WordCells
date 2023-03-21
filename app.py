@@ -62,6 +62,7 @@ def load_wordlists():
     return wordlists
 
 
+
 glove_embeddings_path = 'glove.6B.50d.txt'
 common_nouns_path = 'wordlists/nouns.txt'
 common_adjectives_path = 'wordlists/adjectives.txt'
@@ -74,6 +75,9 @@ common_nouns = load_words(common_nouns_path)
 antonyms = load_words(antonyms_path)
 synonyms = load_words(synonyms_path)
 glove_model = load_glove_embeddings(glove_embeddings_path)
+
+
+
 
 @app.route("/")
 def index():
