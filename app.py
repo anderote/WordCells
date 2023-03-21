@@ -65,12 +65,12 @@ def load_wordlists():
 
 glove_embeddings_path = 'glove.6B.50d.txt'
 common_nouns_path = 'wordlists/nouns.txt'
-common_adjectives_path = 'wordlists/adjectives.txt'
+common_nouns2_path = 'wordlists/nouns2.txt'
 antonyms_path = 'wordlists/antonyms.txt'
 synonyms_path = 'wordlists/synonyms.txt'
 
 wordlists = load_wordlists()
-common_adjectives = load_words(common_adjectives_path)
+common_nouns2 = load_words(common_nouns2_path)
 common_nouns = load_words(common_nouns_path)
 antonyms = load_words(antonyms_path)
 synonyms = load_words(synonyms_path)
@@ -92,8 +92,8 @@ def generate_puzzle():
     if difficulty < 2 or difficulty > 4:
         difficulty = 2
 
-    # TODO: implement more types of puzzle formats, i.e. verb + adjectives, or noun + adjectives, synonyms, antonyms
-    words = random.sample([word for word in common_adjectives if word in glove_model], difficulty-1)
+    # TODO: implement more types of puzzle formats, i.e. verb + nouns2, or noun + nouns2, synonyms, antonyms
+    words = random.sample([word for word in common_nouns2 if word in glove_model], difficulty-1)
     primary_noun = random.sample(common_nouns, 1)[0]
     words.append(primary_noun)
 
