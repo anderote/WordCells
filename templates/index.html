@@ -26,8 +26,8 @@
     <div class="start-screen">
         <h1>WordCeLL-M</h1>
         <p>You are a large language model tasked with predicting the equivalent token based on user input. Type your
-            replies into the text box as fast as possible, using "Enter" to submit your reply and "Shift+Enter" to
-            receive the next prompt.
+            replies into the text box as accurately as possible, using "Enter" to submit your reply and "Shift+Enter" to
+            receive the next prompt. You get points for answers with similarity scores over 0.5.
         </p>
         <button id="start-btn" style="display: inline-block; margin: 0 auto;">Start</button>
     </div>
@@ -83,21 +83,26 @@
             }
 
             function generatePuzzle() {
-                if (previousCorrectAnswer) {
-                    $("#correct-answer").text("Best previous answer: " + previousCorrectAnswer);
-                }
                 $.getJSON('/generate_puzzle', data => {
+                    // Commenting out the lines related to the best previous answer
+                    // previousCorrectAnswer = currentCorrectAnswer;
+                    currentCorrectAnswer = data.correct_answer;
+
+                    // if (previousCorrectAnswer) {
+                    //     $("#correct-answer").text("Best previous answer: " + previousCorrectAnswer);
+                    // }
+
                     $('#puzzle').text(data.puzzle);
                     currentResultEmbedding = data.result_embedding;
                     currentPuzzle = data.puzzle;
-                    previousCorrectAnswer = currentCorrectAnswer;
-                    currentCorrectAnswer = data.correct_answer;
+
                     addPromptToHistory(data.puzzle);
                     submittedWords.clear();
                     // Store the correct answer
                     // generatePoemOnPuzzle(data.puzzle);
                 });
             }
+
 
             function submitAnswer() {
                 const userInput = $('#user-word').val();
