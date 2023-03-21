@@ -27,7 +27,8 @@
         <h1>WordCeLL-M</h1>
         <p>You are a large language model tasked with predicting the equivalent token based on user input. Type your
             replies into the text box as accurately as possible, using "Enter" to submit your reply and "Shift+Enter" to
-            receive the next prompt. You get points for answers with similarity scores over 0.5.
+            receive the next prompt. You get points for answers with similarity scores over 0.5. You lose points for
+            answers with similarity scores under 0.3.
         </p>
         <button id="start-btn" style="display: inline-block; margin: 0 auto;">Start</button>
     </div>
@@ -109,7 +110,7 @@
                 const userWords = userInput.split(/[ ,+]+/).filter(Boolean);
 
                 if (userWords === '') {
-                    return
+                    return;
                 } else {
                     for (const word of userWords) {
                         if (submittedWords.has(word)) {
@@ -131,17 +132,26 @@
                         if (data.error) {
                             $('#result').text(data.error);
                         } else {
+                            // Update the scoring logic based on the similarity
                             if (data.similarity >= 0.5) {
                                 currentScore += 1;
-                                $('#score').text(`alignment score: ${currentScore}`);
+                            } else if (data.similarity < 0.3) {
+                                currentScore -= 1;
+                            }
+
+                            $('#score').text(`alignment score: ${currentScore.toFixed(2)}`);
+                            addReplyToHistory(userInput, data.similarity);
+
+                            // Automatically advance to the next puzzle if the similarity is over 0.5
+                            if (data.similarity >= 0.5) {
                                 generatePuzzle();
                             }
-                            addReplyToHistory(userInput, data.similarity);
                         }
                         $('#user-word').val(''); // Clear the text entry box
                     });
                 }
             }
+
 
 
             function addPromptToHistory(puzzle) {
