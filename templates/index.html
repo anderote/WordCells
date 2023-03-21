@@ -126,15 +126,18 @@
                         if (data.error) {
                             $('#result').text(data.error);
                         } else {
-                            currentScore += data.score;
-                            $('#score').text(`alignment score: ${currentScore.toFixed(2)}`);
+                            if (data.similarity >= 0.5) {
+                                currentScore += 1;
+                                $('#score').text(`alignment score: ${currentScore}`);
+                                generatePuzzle();
+                            }
                             addReplyToHistory(userInput, data.similarity);
-
                         }
                         $('#user-word').val(''); // Clear the text entry box
                     });
                 }
             }
+
 
             function addPromptToHistory(puzzle) {
                 const listItem = $('<li>');
